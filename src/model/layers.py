@@ -220,6 +220,7 @@ class TemporalExactorSTrans(nn.Module):
         # output = output.permute(0, 3, 1, 2)
         
         return output
+        
 
 
 class PredictionHead(nn.Module):

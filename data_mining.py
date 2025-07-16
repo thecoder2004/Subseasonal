@@ -66,11 +66,11 @@ def convert_wandb_csv_nowcast():
     print(f"Đã tạo file {output_csv} thành công!")
     
 def convert_wandb_csv_subseasonal():
-    input_csv = "/mnt/disk3/tunm/Subseasonal_Forecasting/results/Strans/2205/mae.csv"  
+    input_csv = "/mnt/disk3/tunm/Subseasonal_Forecasting/results/Strans/2205/stranv4_mae.csv"  
     station_csv = "/mnt/disk3/longnd/env_data/Gauge_thay_Tan/Final_Data_Region_1.csv"     
     time_csv = "/mnt/disk3/nxmanh/Subseasonal_Prediction/data/data6789_seed52/test.csv"          
     # output_csv = "/mnt/disk1/env_data/result/subseasonal/reg_1/strans/prediction_groundtruth_strans.csv"  
-    output_csv = "/mnt/disk3/tunm/Subseasonal_Forecasting/results/Strans/2205/mae-final.csv"     
+    output_csv = "/mnt/disk3/tunm/Subseasonal_Forecasting/results/Strans/2205/stranv4_mae-final.csv"     
    
 
     df_pred = pd.read_csv(input_csv)  
@@ -164,7 +164,7 @@ def plot():
 
 def plot_test_1():
     lead_time_value = 8  # Lead time = 8
-    csv_file = "//mnt/disk3/tunm/Subseasonal_Forecasting/results/Strans/2205/mae-final.csv"
+    csv_file = "/mnt/disk3/tunm/Subseasonal_Forecasting/results/Strans/2205/mae-final.csv"
     saved_dir = f"/mnt/disk3/tunm/Subseasonal_Forecasting/results/Strans/2205/plot/data2/leadtime{lead_time_value}_dr025-mae"    
     os.makedirs(saved_dir, exist_ok=True)
     df = pd.read_csv(csv_file)
@@ -227,14 +227,14 @@ def plot_test_1():
 
 def plot_test():
     lead_time_value = 8  # Lead time = 8
-    csv_file = "/mnt/disk1/tunm/Subseasional_Forecasting/results/Strans/2205/focal-final.csv"
-    csv_file_v2 = "/mnt/disk1/tunm/Subseasional_Forecasting/results/Strans/2205/logmag-final.csv"
-    saved_dir = f"/mnt/disk1/tunm/Subseasional_Forecasting/results/Strans/2205/plot/leadtime{lead_time_value}" 
+    csv_file = "/mnt/disk3/tunm/Subseasonal_Forecasting/results/Strans/2205/stranv4_mae-final.csv"
+    csv_file_v2 = "/mnt/disk3/tunm/Subseasonal_Forecasting/results/Strans/2205/ecmwf-final.csv"
+    saved_dir = f"/mnt/disk3/tunm/Subseasonal_Forecasting/results/Strans/2205/plot/leadtime{lead_time_value}" 
     os.makedirs(saved_dir, exist_ok=True)   
     df = pd.read_csv(csv_file)
     df_ver2 = pd.read_csv(csv_file_v2)
 
-    
+    model = "Strans-v4"
 
     # Lọc dữ liệu theo lead_time = 8
     filtered_df = df[df['lead_time'] == lead_time_value]
@@ -270,14 +270,30 @@ def plot_test():
         groundtruths = station_df['Groundtruth']
         predictions_ver2 = station_df_ver2['Prediction']
         groundtruths_ver2 = station_df_ver2['Groundtruth']
+        stran_mae, stran_mse, stran_mape, stran_rmse, stran_r2, stran_corr = cal_acc(predictions, groundtruths)
+        ecmwf_mae, ecmfw_mse, ecmwf_mape, ecmwf_rmse, ecmwf_r2, ecmwf_corr = cal_acc(predictions_ver2, groundtruths)
+        text_str = (
+            f"{model}:\n"
+            f"  MAE: {stran_mae:.4f}\n"
+            f"  RMSE: {stran_rmse:.4f}\n"
+            f"  R²: {stran_r2:.4f}\n"
+            f"  Corr: {stran_corr:.4f}\n\n"
+            f"ECMWF:\n"
+            f"  MAE: {ecmwf_mae:.4f}\n"
+            f"  RMSE: {ecmwf_rmse:.4f}\n"
+            f"  R²: {ecmwf_r2:.4f}\n"
+            f"  Corr: {ecmwf_corr:.4f}"
+        )
             
         # Vẽ đường cho Prediction (ModelV1) với nét đứt
-        plt.plot(indices, predictions, color='blue', marker='o', markersize=4, linestyle='--', alpha=0.7, label='Prediction (Focal)')
+        plt.plot(indices, predictions, color='blue', marker='o', markersize=4, linestyle='--', alpha=0.7, label=model)
         # Vẽ đường cho Prediction (ModelV1 + ChannelAttn)
-        plt.plot(indices, predictions_ver2, color='green', marker='s', markersize=4, linestyle=':', alpha=0.7, label='Prediction (Logmag)')
+        plt.plot(indices, predictions_ver2, color='green', marker='s', markersize=4, linestyle=':', alpha=0.7, label='ECMWF')
         # Vẽ đường cho Groundtruth
         plt.plot(indices, groundtruths, color='red', marker='x', markersize=4, linestyle='-', alpha=0.7, label='Groundtruth (Gauge)')
-
+        props = dict(boxstyle='round', facecolor='white', edgecolor='black', lw=1)
+        ax = plt.gca()
+        ax.text(0.95, 0.95, text_str, transform=ax.transAxes, fontsize=10,verticalalignment='top', bbox=props)
         # Cài đặt các thông số biểu đồ
         plt.title(f'ECMWF Comparison for Station {station_value} - Lead Time = {lead_time_value}', fontsize=14)
         plt.xlabel('Index (Days)', fontsize=12)
@@ -299,9 +315,9 @@ def plot_test():
 
 def cal_acc(y_prd, y_grt):
     mae = mean_absolute_error(y_grt, y_prd)
-    mse = mean_squared_error(y_grt, y_prd, squared=True)
+    mse = mean_squared_error(y_grt, y_prd)
     mape = mean_absolute_percentage_error(y_grt, y_prd)
-    rmse = mean_squared_error(y_grt, y_prd, squared=False)
+    rmse = np.sqrt(mse)
     corr = np.corrcoef(np.reshape(y_grt, (-1)), np.reshape(y_prd, (-1)))[0][1]
     r2 = r2_score(y_grt, y_prd)
     # mdape_ = mdape(y_grt,y_prd)
@@ -340,8 +356,8 @@ def cal_acc_reg(region):
     print(f"MSE: {mse} MAE:{mae} MAPE:{mape} RMSE:{rmse} R2:{r2} Corr:{corr_}")         
 
 convert_wandb_csv_subseasonal()
-plot_test_1()
+#plot_test_1()
 # convert_wandb_csv()
 
-#plot_test()
+plot_test()
 # cal_acc_reg(1)

@@ -1,8 +1,8 @@
 CUDA_VISIBLE_DEVICES=0 python main.py --cfg config/default.yaml  \
-        --name strans \
+        --name strans-v4 \
         --in_channel 13 \
         --adding_type 0 \
-        --dropout 0.25 \
+        --dropout 0.3 \
         --height 17 \
         --width 17 \
         --data_idx_dir /mnt/disk3/tunm/Subseasonal_Forecasting/data2/data6789_reg_1_seed52 \
@@ -12,7 +12,7 @@ CUDA_VISIBLE_DEVICES=0 python main.py --cfg config/default.yaml  \
         --lat_start 22.75 \
         --lon_start 102.75 \
         --use_layer_norm \
-        --loss_func mse \
+        --loss_func mae \
         --lr 5e-4 \
         --use_lrscheduler \
         --scheduler_type ReduceLROnPlateau \

@@ -519,13 +519,13 @@ class SwinTransformer_Ver3(nn.Module):
         self.upsample = UpsampleWithTransposedConv(self.hidden_dim, self.embed_dim, scale_factor=self.patch_size)  # Upsample with transposed convolution
         
         # vit = timm.create_model("vit_base_patch16_224", pretrained=True)
-        vit = timm.create_model("vit_tiny_patch16_224", pretrained=True)
-        self.spatial_encoder = vit.blocks
-        for param in self.spatial_encoder.parameters():
-                param.requires_grad = False
-        for blk in self.spatial_encoder[-3:]:
-            for param in blk.parameters():
-                param.requires_grad = True
+        vit = timm.create_model("vit_tiny_patch16_224", pretrained=False)
+        self.spatial_encoder = vit.blocks[:3]
+        # for param in self.spatial_encoder.parameters():
+        #         param.requires_grad = False
+        # for blk in self.spatial_encoder[-3:]:
+        #     for param in blk.parameters():
+        #         param.requires_grad = True
 
         self.prompt_type = config.MODEL.PROMPT_TYPE
         self.add_type = config.MODEL.TEMPORAL.ADDING_TYPE
@@ -655,13 +655,13 @@ class SwinTransformer_Ver4(nn.Module):
         self.channel_attn = SEResNet(in_channels=config.MODEL.IN_CHANNEL, out_channels=config.MODEL.IN_CHANNEL, reduction_ratio=2)
         
         # vit = timm.create_model("vit_base_patch16_224", pretrained=True)
-        vit = timm.create_model("vit_tiny_patch16_224", pretrained=True)
-        self.spatial_encoder = vit.blocks
-        for param in self.spatial_encoder.parameters():
-                param.requires_grad = False
-        for blk in self.spatial_encoder[-3:]:
-            for param in blk.parameters():
-                param.requires_grad = True
+        vit = timm.create_model("vit_tiny_patch16_224", pretrained=False)
+        self.spatial_encoder = vit.blocks[:3]
+        # for param in self.spatial_encoder.parameters():
+        #         param.requires_grad = False
+        # for blk in self.spatial_encoder[-3:]:
+        #     for param in blk.parameters():
+        #         param.requires_grad = True
         
         self.prompt_type = config.MODEL.PROMPT_TYPE
         self.add_type = config.MODEL.TEMPORAL.ADDING_TYPE

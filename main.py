@@ -29,7 +29,7 @@ def get_loss_function(config):
     elif loss_name == "mae":
         return nn.L1Loss()
     elif loss_name == "huberloss":
-        return nn.HuberLoss(delta=80.0, reduction='mean')
+        return nn.HuberLoss(delta=30.0, reduction='mean')
     elif loss_name == "expweightedloss":
         return ExpMagnitudeWeightedMAELoss(config.LOSS.k)
     elif loss_name == "weightedmse":

@@ -70,7 +70,7 @@ def test_func(model, test_dataset, criterion, config, output_scaler, device):
         for data in tqdm(test_dataloader):
             input_data, lead_time, y_grt, ecmwf = data['x'].to(device), data['lead_time'].to(device), data['y'].to(device), data['ecmwf'].to(device)
             ecmwf = ecmwf[:,:,-1,:,:]# (B,7, H, W)
-            ecmwf = torch.sum(ecmwf, dim=1) # (B, H, W)
+            ecmwf = torch.mean(ecmwf, dim=1) # (B, H, W)
             ecmwf = torch.unsqueeze(ecmwf, dim=-1) # Sử dụng torch.unsqueeze và dim=-1
             
             y_prd = model([input_data, lead_time]) # (batch_size, 137, 121, 1)
@@ -203,4 +203,3 @@ def test_func1(model, test_dataset, criterion, config, output_scaler, device, ou
                 
 
     print(f"Testing completed. Images saved to {output_dir}")
-

@@ -121,6 +121,12 @@ class ChannelSELayer(nn.Module):
         self.fc2 = nn.Linear(num_channels_reduced, num_channels, bias=True)
         self.relu = nn.ReLU()
         self.sigmoid = nn.Sigmoid()
+        self.alpha = nn.Parameter(torch.tensor(0.5))
+        #======================================================#
+        self.init__weight()
+    def init__weight(self):
+        nn.init.constant_(self.fc2.weight, 0)
+        nn.init.constant_(self.fc2.bias, 0)
 
     def forward(self, input_tensor):
         """
@@ -130,13 +136,16 @@ class ChannelSELayer(nn.Module):
         """
         batch_size, num_channels, H, W = input_tensor.size()
         # Average along each channel
-        squeeze_tensor = input_tensor.view(batch_size, num_channels, -1).mean(dim=2) # (batch_size, num_channels)
-
+        squeeze_tensor_avg = input_tensor.view(batch_size, num_channels, -1).mean(dim=2) # (batch_size, num_channels)
+        squeeze_tensor_max = input_tensor.view(batch_size, num_channels, -1).max(dim=2)[0]
         # channel excitation
-        fc_out_1 = self.relu(self.fc1(squeeze_tensor)) # (batch_size, num_channels_reduced)
+        fc_out_1_avg = self.relu(self.fc1(squeeze_tensor_avg)) # (batch_size, num_channels_reduced)
+        fc_out_1_max = self.relu(self.fc1(squeeze_tensor_max)) # (batch_size, num_channels_reduced)
+        
+        fc_out_1 = self.alpha * fc_out_1_avg + (1 - self.alpha) * fc_out_1_max # (batch_size, num_channels_reduced)
         fc_out_2 = self.sigmoid(self.fc2(fc_out_1)) # (batch_size, num_channels)
 
-        a, b = squeeze_tensor.size()
+        a, b = squeeze_tensor_avg.size()
         output_tensor = torch.mul(input_tensor, fc_out_2.view(a, b, 1, 1))
         return output_tensor
 
